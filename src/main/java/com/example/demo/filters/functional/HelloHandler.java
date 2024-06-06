@@ -11,9 +11,11 @@ import reactor.core.publisher.Mono;
 public class HelloHandler {
 
     public Mono<ServerResponse> hello(ServerRequest request) {
-        if (true) throw new RuntimeException("An error occurred");
-        return ServerResponse.ok()
-                .contentType(MediaType.TEXT_PLAIN)
-                .bodyValue(new ResponseDto("Hello, World!"));
+        return request.bodyToMono(String.class)
+                .doOnNext(System.out::println)
+                .then(ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(new ResponseDto("Hello, World!"))
+                );
     }
 }
