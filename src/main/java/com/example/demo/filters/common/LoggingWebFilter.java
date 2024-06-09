@@ -75,6 +75,7 @@ public class LoggingWebFilter implements WebFilter {
         public Flux<DataBuffer> getBody() {
             return super.getBody().doOnNext( buffer -> {
                     // changes in the returned buffer's position will not be reflected in the of this data buffer
+                    // netty 의 경우 new ByteBuffer[] { nioBuffer(index, length) } 반환
                     try (DataBuffer.ByteBufferIterator bfs = buffer.readableByteBuffers()) {
                         ByteBuffer bf = bfs.next();
                         byte[] bytes = new byte[bf.remaining()];
@@ -100,13 +101,14 @@ public class LoggingWebFilter implements WebFilter {
 
         @Override
         public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-            return super.writeWith(Flux.from(body)
-                    .map( buffer -> {
-                        final byte[] bytes = new byte[buffer.readableByteCount()];
-                        DataBufferUtils.release(buffer.read(bytes));
-                        this.bodyString = new String(bytes);
-                        return getDelegate().bufferFactory().wrap(bytes);
-                    }));
+            return super.writeWith(
+                    Flux.from(body)
+                        .map( buffer -> {
+                            final byte[] bytes = new byte[buffer.readableByteCount()];
+                            DataBufferUtils.release(buffer.read(bytes));
+                            this.bodyString = new String(bytes);
+                            return getDelegate().bufferFactory().wrap(bytes);
+                        }));
         }
     }
 }

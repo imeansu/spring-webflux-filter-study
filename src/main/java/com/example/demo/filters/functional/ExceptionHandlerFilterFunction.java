@@ -7,7 +7,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
-public class ExceptionHandlerFilterFunction implements HandlerFilterFunction {
+public class ExceptionHandlerFilterFunction implements HandlerFilterFunction<ServerResponse, ServerResponse> {
 
     @Override
     public Mono<ServerResponse> filter(ServerRequest request, HandlerFunction next) {

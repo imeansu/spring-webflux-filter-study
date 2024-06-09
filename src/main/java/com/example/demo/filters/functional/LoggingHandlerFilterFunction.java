@@ -15,6 +15,7 @@ public class LoggingHandlerFilterFunction implements HandlerFilterFunction<Serve
     public Mono<ServerResponse> filter(ServerRequest request, HandlerFunction<ServerResponse> next) {
         return request.bodyToMono(String.class).singleOptional()
                 .flatMap(requestBody -> {
+                    // request body 를 bodyToMono 로 읽었으므로 새로운 request 를 만들어야 함
                     ServerRequest.Builder requestBuilder = ServerRequest.from(request);
                     String body = requestBody.orElse(null);
                     if (body != null) {
@@ -27,8 +28,12 @@ public class LoggingHandlerFilterFunction implements HandlerFilterFunction<Serve
                             .flatMap(response -> {
                                 log(body, response);
                                 return Mono.just(response);
-                            });
+                            }).doOnError(e -> log(body, e));
                 });
+    }
+
+    private void log(String requestBody, Throwable e) {
+        log.error("Request body: {}", requestBody, e);
     }
 
     private void log(String requestBody, ServerResponse response) {
